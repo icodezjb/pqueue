@@ -5,7 +5,7 @@ const blockSize = 4096
 
 // A prioritized item in the sorted stack
 type item struct {
-	value interface{}
+	value    interface{}
 	priority float32
 }
 
@@ -13,9 +13,9 @@ type item struct {
 // the stack (heap) functionality and the Len, Less and Swap methods for the
 // interface of the heap
 type sStack struct {
-	size int
+	size     int
 	capacity int
-	offset int
+	offset   int
 
 	blocks [][]*item
 	active []*item
@@ -24,7 +24,7 @@ type sStack struct {
 // Create a new, empty stack
 func newSstack() (stack *sStack) {
 	stack = new(sStack)
-	stack.active = make([]*item,blockSize)
+	stack.active = make([]*item, blockSize)
 	stack.blocks = [][]*item{stack.active}
 	stack.capacity = blockSize
 	return
@@ -33,9 +33,10 @@ func newSstack() (stack *sStack) {
 // Pushes a value onto the stack, expanding it if necessary, Required by
 // heap.Interface.
 func (s *sStack) Push(data interface{}) {
-	if s.offset == s.capacity {
+	if s.size == s.capacity {
 		s.active = make([]*item, blockSize)
 		s.blocks = append(s.blocks, s.active)
+		s.capacity += blockSize
 		s.offset = 0
 	} else if s.offset == blockSize {
 		s.active = s.blocks[s.size/blockSize]
@@ -48,7 +49,11 @@ func (s *sStack) Push(data interface{}) {
 
 // Pops a value off the stack and returns it. Currently no shrinking is done.
 // Required by heap.Interface.
-func (s *sStack) Pop() (data interface{})  {
+func (s *sStack) Pop() (data interface{}) {
+	if s.size == 0 {
+		return
+	}
+
 	s.size--
 	s.offset--
 	if s.offset < 0 {
@@ -78,5 +83,5 @@ func (s *sStack) Swap(i, j int) {
 
 // Resets the stack, effectively clearing its contents.
 func (s *sStack) Reset() {
-	*s = *new(sStack)
+	*s = *newSstack()
 }
